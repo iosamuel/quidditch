@@ -38,7 +38,11 @@
             'space--goal': (
               key === teams.team1.pieces.goldenSnitch.goalIndex ||
               key === teams.team2.pieces.goldenSnitch.goalIndex
-            )
+            ),
+            'space--sitting': ~[
+                teams.team1.pieces.goldenSnitch.position,
+                teams.team2.pieces.goldenSnitch.position
+              ].indexOf(key),
           }"
           :style="getSpaceStyleGoldenSnitch(key)"
           v-for="(space, key) in goldenSnitchSpaces"
@@ -55,7 +59,15 @@
       </div>
     </div>
     <hr>
-    <button @click="rollGoldenSnitch">Roll to Golden Snitch!</button>
+    <div class="panel">
+      <button
+        class="btn"
+        @click="rollGoldenSnitch"
+        :disabled="diceRolled">
+        Roll to Golden Snitch!
+      </button>
+      <Dice :dice="dice" :rolled="diceRolled" ref="diceElement" />
+    </div>
   </div>
 </template>
 
@@ -64,6 +76,7 @@
 /* eslint-disable array-bracket-spacing */
 /* eslint-disable no-multi-spaces */
 import Alerts from '@/components/Alerts.vue';
+import Dice from '@/components/Dice.vue';
 
 const goldenSnitchSpaces = 76;
 const halfGoldenSnitchSpaces = (goldenSnitchSpaces / 2);
@@ -91,6 +104,7 @@ export default {
   name: 'Game',
   components: {
     Alerts,
+    Dice,
   },
   data() {
     return {
@@ -135,6 +149,8 @@ export default {
         message: '',
         type: '',
       },
+      dice: 1,
+      diceRolled: false,
     };
   },
   mounted() {
@@ -156,22 +172,30 @@ export default {
       };
     },
     rollDice() {
-      return Math.floor(Math.random() * (6 - 1)) + 1; // 6 numeros del dado
+      this.dice = Math.floor(Math.random() * (6 - 1)) + 1; // 6 numeros del dado
+      this.diceRolled = true;
+      return new Promise((resolve) => {
+        this.$refs.diceElement.$once('dice-rolled', () => {
+          this.diceRolled = false;
+          resolve();
+        });
+      });
     },
     rollGoldenSnitch() {
-      const dice = this.rollDice();
-      const currentPosition = this.teams[this.turn].pieces.goldenSnitch.position;
-      const goal = this.teams[this.turn].pieces.goldenSnitch.goalIndex;
-      const futurePosition = currentPosition + dice;
+      this.rollDice().then(() => {
+        const currentPosition = this.teams[this.turn].pieces.goldenSnitch.position;
+        const goal = this.teams[this.turn].pieces.goldenSnitch.goalIndex;
+        const futurePosition = currentPosition + this.dice;
 
-      if (futurePosition <= goal) {
-        this.teams[this.turn].pieces.goldenSnitch.position += dice;
-      } else if (futurePosition === goal) {
-        this.teams[this.turn].pieces.goldenSnitch.position = goal;
-      } else {
-        this.showAlert(`Muy alto! Necesitas un ${goal - currentPosition}`, 'error');
-        this.changeTurn();
-      }
+        if (futurePosition <= goal) {
+          this.teams[this.turn].pieces.goldenSnitch.position += this.dice;
+        } else if (futurePosition === goal) {
+          this.teams[this.turn].pieces.goldenSnitch.position = goal;
+        } else {
+          this.showAlert(`Muy alto! Necesitas un ${goal - currentPosition}`, 'error');
+          this.changeTurn();
+        }
+      });
     },
     showAlert(message, type) {
       this.alert = {
@@ -279,6 +303,22 @@ export default {
       &--goal::before {
         background: white;
       }
+
+      &--sitting {
+        animation: highlight 2s forwards;
+      }
+
+      @keyframes highlight {
+        0% {
+          transform: scale(1) translate(-50%, -50%);
+        }
+        50% {
+          transform: scale(1.5) translate(-50%, -50%);
+        }
+        100% {
+          transform: scale(1) translate(-50%, -50%);
+        }
+      }
     }
   }
 
@@ -319,6 +359,32 @@ export default {
       .space {
         background-color: yellow;
       }
+    }
+  }
+
+  .panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 40px;
+
+    .btn {
+      margin-bottom: 14px;
+    }
+  }
+
+  .btn {
+    padding: 14px;
+    background: rgb(36, 104, 36);
+    color: white;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+
+    &[disabled] {
+      color: rgb(107, 207, 107);
+      color: rgb(177, 171, 171);
     }
   }
 </style>
