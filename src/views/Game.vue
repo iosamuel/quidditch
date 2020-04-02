@@ -31,7 +31,7 @@
             :space="[keyRow, key]"
             :team="teams.team1"
             :pieceMoving="pieceMoving"
-            @click="pieceClicked(chaser, 'team1')"/>
+            @click="!gameBegin.init && pieceClicked(chaser, 'team1')"/>
           <Piece
             v-for="(chaser, pieceKey) in teams.team2.pieces.chasers"
             :key="teams.team2.name + chaser.type + pieceKey"
@@ -39,7 +39,7 @@
             :space="[keyRow, key]"
             :team="teams.team2"
             :pieceMoving="pieceMoving"
-            @click="pieceClicked(chaser, 'team2')"/>
+            @click="!gameBegin.init && pieceClicked(chaser, 'team2')"/>
           <Piece
             v-for="(beater, pieceKey) in teams.team1.pieces.beaters"
             :key="teams.team1.name + beater.type + pieceKey"
@@ -47,7 +47,7 @@
             :space="[keyRow, key]"
             :team="teams.team1"
             :pieceMoving="pieceMoving"
-            @click="pieceClicked(beater, 'team1')"/>
+            @click="!gameBegin.init && pieceClicked(beater, 'team1')"/>
           <Piece
             v-for="(beater, pieceKey) in teams.team2.pieces.beaters"
             :key="teams.team2.name + beater.type + pieceKey"
@@ -55,21 +55,24 @@
             :space="[keyRow, key]"
             :team="teams.team2"
             :pieceMoving="pieceMoving"
-            @click="pieceClicked(beater, 'team2')"/>
+            @click="!gameBegin.init && pieceClicked(beater, 'team2')"/>
           <Piece
             :piece="teams.team1.pieces.keeper"
             :space="[keyRow, key]"
             :team="teams.team1"
             :pieceMoving="pieceMoving"
-            @click="pieceClicked(teams.team1.pieces.keeper, 'team1')"
+            @click="!gameBegin.init && pieceClicked(teams.team1.pieces.keeper, 'team1')"
             v-if="isInPosition(teams.team1.pieces.keeper.position, [keyRow, key])"/>
           <Piece
             :piece="teams.team2.pieces.keeper"
             :space="[keyRow, key]"
             :team="teams.team2"
             :pieceMoving="pieceMoving"
-            @click="pieceClicked(teams.team2.pieces.keeper, 'team2')"
+            @click="!gameBegin.init && pieceClicked(teams.team2.pieces.keeper, 'team2')"
             v-if="isInPosition(teams.team2.pieces.keeper.position, [keyRow, key])"/>
+          <Piece
+            :piece="teams.quaffle"
+            :space="[keyRow, key]"/>
         </div>
       </div>
 
@@ -138,12 +141,28 @@
         </div>
       </div>
     </div>
-    <hr>
     <div class="panel">
+      <div class="panel__message" v-if="!gameBegin.init">
+        Turno de:
+        <span
+          :style="{ color: teams[turn].color }">
+          {{ teams[turn].name }}
+        </span>
+      </div>
+      <div class="panel__message" v-else>
+        Tiren los dados para saber quien empieza.
+      </div>
+      <button
+        class="btn"
+        :style="{ backgroundColor: teams[turn].color }"
+        @click="rollDiceTeam"
+        :disabled="!gameBegin.init || diceRolled">
+        {{ teams[turn].name }}: Roll the dice.
+      </button>
       <button
         class="btn"
         @click="rollGoldenSnitch"
-        :disabled="diceRolled">
+        :disabled="diceRolled || !canGoldenSnitch">
         Roll to Golden Snitch!
       </button>
       <Dice :dice="dice" :rolled="diceRolled" ref="diceElement" />
@@ -162,8 +181,8 @@ import Piece from '@/components/Piece.vue';
 const goldenSnitchSpaces = 76;
 const halfGoldenSnitchSpaces = (goldenSnitchSpaces / 2);
 
-// TODO: Quizas mover las piezas fuera de cada div y solo calcular su posicion absoluta
-// TODO: !!Agregar las reglas de movimiento
+// TODO:? Quizas mover las piezas fuera de cada div y solo calcular su posicion absoluta
+// TODO:! Agregar las reglas de movimiento
 
 // types:chaser
 const chaser = {
@@ -182,6 +201,13 @@ const keeper = {
     y: 1,
     x: 1,
   },
+};
+
+// types:quaffle
+const quaffle = {
+  type: 'quaffle',
+  position: { x: 5, y: 8 },
+  startPosition: { x: 5, y: 8 },
 };
 
 const team1Structure = {
@@ -324,6 +350,7 @@ export default {
           color: '#512830',
           ...JSON.parse(JSON.stringify(team2Structure)),
         },
+        quaffle,
       },
       goldenSnitchSpaces,
       turn: 'team1',
@@ -336,7 +363,18 @@ export default {
       dice: 1,
       diceRolled: false,
       pieceMoving: null,
+      gameBegin: {
+        init: true,
+        team1: null,
+        team2: null,
+      },
     };
+  },
+  computed: {
+    canGoldenSnitch() {
+      // TODO: Agregar logica para que el equipo tire a golden snitch
+      return false;
+    },
   },
   mounted() {
     this.board.boardHeight = parseInt(
@@ -364,6 +402,31 @@ export default {
           this.diceRolled = false;
           resolve();
         });
+      });
+    },
+    rollDiceTeam() {
+      this.rollDice().then(() => {
+        if (this.gameBegin.init) {
+          this.gameBegin[this.turn] = this.dice;
+          console.log(this.gameBegin[this.turn], this.turn, this.dice);
+          if (this.gameBegin.team1 && this.gameBegin.team2) {
+            if (this.gameBegin.team1 === this.gameBegin.team2) {
+              // No pueden ser iguales, toca repetir el proceso
+              this.gameBegin.team1 = null;
+              this.gameBegin.team2 = null;
+              this.changeTurn();
+            } else {
+              this.turn = (
+                this.gameBegin.team1 > this.gameBegin.team2
+                ? 'team1'
+                : 'team2'
+              );
+              this.gameBegin.init = false;
+            }
+          } else {
+            this.changeTurn();
+          }
+        }
       });
     },
     rollGoldenSnitch() {

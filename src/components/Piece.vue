@@ -1,16 +1,13 @@
 <template>
   <div
     class="piece"
-    :class="{
-      'piece--chaser': piece.type === 'chaser',
-      'piece--beater': piece.type === 'beater',
-      'piece--keeper': piece.type === 'keeper',
+    :class="[`piece--${piece.type}`, {
       'piece--highlight':
         pieceMoving &&
         pieceMoving.type === piece.type &&
         pieceMoving.position.x === piece.position.x &&
         pieceMoving.position.y === piece.position.y
-    }"
+    }]"
     @click="$emit('click')"
     v-if="space[0] === piece.position.y && space[1] === piece.position.x"
   >
@@ -24,7 +21,34 @@
       viewBox="0 0 100 100"
       style="enable-background:new 0 0 100 100;"
       xml:space="preserve"
-      v-if="team.name === 'Hogwarts' && piece.type === 'chaser'"
+      v-if="piece.type === 'quaffle'"
+    >
+      <circle cx="50" cy="50" r="50" fill="white" />
+      <g fill="#a42b32">
+        <path class="st0" d="M28.4,56.2c0,3.2-2.5,5.8-5.6,5.8V50.4C25.9,50.4,28.4,53,28.4,56.2z" />
+        <g>
+          <path
+            class="st0"
+            d="M50,19.1c-15.6,0-28.4,12.5-29.6,28.4c0.7-0.2,1.4-0.3,2.1-0.3c4.5,0,8.3,3.3,9.3,7.7h16.1
+              c0-8.3,6.5-15,14.4-15c8,0,14.4,6.7,14.4,15s-6.5,15-14.4,15C55,70,49,64.4,48,57.1H32c0,4.6-3,8.4-7.1,9.5
+              c5.3,8.6,14.5,14.3,25,14.3c16.4,0,29.7-13.8,29.7-30.9S66.3,19.1,50,19.1z M38.6,44.9L36.5,41L32,44l2.6-3.7l-8.9,0.9l1.1-1.4
+              l-4.4,0.6l3.6-5.1l9.3-6l-5.7,6l17.2-1.2L38.6,44.9z"
+          />
+          <ellipse class="st0" cx="62.2" cy="55" rx="12" ry="12.5" />
+        </g>
+      </g>
+    </svg>
+    <svg
+      version="1.1"
+      id="Capa_1"
+      xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      x="0px"
+      y="0px"
+      viewBox="0 0 100 100"
+      style="enable-background:new 0 0 100 100;"
+      xml:space="preserve"
+      v-else-if="team.name === 'Hogwarts' && piece.type === 'chaser'"
     >
       <circle cx="50" cy="50" r="50" :style="{ fill: team.color }" />
       <path
@@ -80,7 +104,7 @@
       viewBox="0 0 100 100"
       style="enable-background:new 0 0 100 100;"
       xml:space="preserve"
-      v-if="team.name === 'Slytherin' && piece.type === 'chaser'"
+      v-else-if="team.name === 'Slytherin' && piece.type === 'chaser'"
     >
       <circle cx="50" cy="50" r="50" :style="{ fill: team.color }" />
       <g style="fill: white">
@@ -155,7 +179,7 @@
       viewBox="0 0 100 100"
       style="enable-background:new 0 0 100 100;"
       xml:space="preserve"
-      v-if="piece.type === 'beater'"
+      v-else-if="piece.type === 'beater'"
     >
       <circle cx="50" cy="50" r="50" :fill="team.color" />
       <g fill="white">
@@ -199,7 +223,7 @@
       viewBox="0 0 100 100"
       style="enable-background:new 0 0 100 100;"
       xml:space="preserve"
-      v-if="piece.type === 'keeper'"
+      v-else-if="piece.type === 'keeper'"
     >
       <circle cx="50" cy="50" r="50" :fill="team.color" />
       <path

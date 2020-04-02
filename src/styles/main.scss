@@ -156,6 +156,16 @@ $green-light: #87b6a6;
   .btn {
     margin-bottom: 14px;
   }
+
+  &__message {
+    padding: 14px;
+    font-size: 28px;
+    font-family: fantasy;
+
+    span {
+      font-weight: bold;
+    }
+  }
 }
 
 .btn {
