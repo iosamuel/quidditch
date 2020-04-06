@@ -24,53 +24,62 @@
             'space--alternate': !!(key % 2)
           }"
           @click="space && movePiece(keyRow, key)">
+          <template v-for="(chaser, pieceKey) in teams.team1.pieces.chasers">
+            <Piece
+              v-if="isInPosition(chaser.position, [keyRow, key])"
+              :key="teams.team1.name + chaser.type + pieceKey"
+              :piece="chaser"
+              :space="[keyRow, key]"
+              :team="teams.team1"
+              :pieceMoving="pieceMoving"
+              @click="!gameBegin.init && pieceClicked(chaser, 'team1')"/>
+          </template>
+          <template v-for="(chaser, pieceKey) in teams.team2.pieces.chasers">
+            <Piece
+              v-if="isInPosition(chaser.position, [keyRow, key])"
+              :key="teams.team2.name + chaser.type + pieceKey"
+              :piece="chaser"
+              :space="[keyRow, key]"
+              :team="teams.team2"
+              :pieceMoving="pieceMoving"
+              @click="!gameBegin.init && pieceClicked(chaser, 'team2')"/>
+          </template>
+          <template v-for="(beater, pieceKey) in teams.team1.pieces.beaters">
+            <Piece
+              v-if="isInPosition(beater.position, [keyRow, key])"
+              :key="teams.team1.name + beater.type + pieceKey"
+              :piece="beater"
+              :space="[keyRow, key]"
+              :team="teams.team1"
+              :pieceMoving="pieceMoving"
+              @click="!gameBegin.init && pieceClicked(beater, 'team1')"/>
+          </template>
+          <template v-for="(beater, pieceKey) in teams.team2.pieces.beaters">
+            <Piece
+              v-if="isInPosition(beater.position, [keyRow, key])"
+              :key="teams.team2.name + beater.type + pieceKey"
+              :piece="beater"
+              :space="[keyRow, key]"
+              :team="teams.team2"
+              :pieceMoving="pieceMoving"
+              @click="!gameBegin.init && pieceClicked(beater, 'team2')"/>
+          </template>
           <Piece
-            v-for="(chaser, pieceKey) in teams.team1.pieces.chasers"
-            :key="teams.team1.name + chaser.type + pieceKey"
-            :piece="chaser"
-            :space="[keyRow, key]"
-            :team="teams.team1"
-            :pieceMoving="pieceMoving"
-            @click="!gameBegin.init && pieceClicked(chaser, 'team1')"/>
-          <Piece
-            v-for="(chaser, pieceKey) in teams.team2.pieces.chasers"
-            :key="teams.team2.name + chaser.type + pieceKey"
-            :piece="chaser"
-            :space="[keyRow, key]"
-            :team="teams.team2"
-            :pieceMoving="pieceMoving"
-            @click="!gameBegin.init && pieceClicked(chaser, 'team2')"/>
-          <Piece
-            v-for="(beater, pieceKey) in teams.team1.pieces.beaters"
-            :key="teams.team1.name + beater.type + pieceKey"
-            :piece="beater"
-            :space="[keyRow, key]"
-            :team="teams.team1"
-            :pieceMoving="pieceMoving"
-            @click="!gameBegin.init && pieceClicked(beater, 'team1')"/>
-          <Piece
-            v-for="(beater, pieceKey) in teams.team2.pieces.beaters"
-            :key="teams.team2.name + beater.type + pieceKey"
-            :piece="beater"
-            :space="[keyRow, key]"
-            :team="teams.team2"
-            :pieceMoving="pieceMoving"
-            @click="!gameBegin.init && pieceClicked(beater, 'team2')"/>
-          <Piece
+            v-if="isInPosition(teams.team1.pieces.keeper.position, [keyRow, key])"
             :piece="teams.team1.pieces.keeper"
             :space="[keyRow, key]"
             :team="teams.team1"
             :pieceMoving="pieceMoving"
-            @click="!gameBegin.init && pieceClicked(teams.team1.pieces.keeper, 'team1')"
-            v-if="isInPosition(teams.team1.pieces.keeper.position, [keyRow, key])"/>
+            @click="!gameBegin.init && pieceClicked(teams.team1.pieces.keeper, 'team1')"/>
           <Piece
+            v-if="isInPosition(teams.team2.pieces.keeper.position, [keyRow, key])"
             :piece="teams.team2.pieces.keeper"
             :space="[keyRow, key]"
             :team="teams.team2"
             :pieceMoving="pieceMoving"
-            @click="!gameBegin.init && pieceClicked(teams.team2.pieces.keeper, 'team2')"
-            v-if="isInPosition(teams.team2.pieces.keeper.position, [keyRow, key])"/>
+            @click="!gameBegin.init && pieceClicked(teams.team2.pieces.keeper, 'team2')"/>
           <Piece
+            v-if="isInPosition(teams.quaffle.position, [keyRow, key])"
             :piece="teams.quaffle"
             :space="[keyRow, key]"/>
         </div>
@@ -181,7 +190,7 @@ import Piece from '@/components/Piece.vue';
 const goldenSnitchSpaces = 76;
 const halfGoldenSnitchSpaces = (goldenSnitchSpaces / 2);
 
-// TODO:? Quizas mover las piezas fuera de cada div y solo calcular su posicion absoluta
+// TODO: Agregar cartas de juego
 // TODO:! Agregar las reglas de movimiento
 
 // types:chaser
