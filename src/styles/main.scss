@@ -27,6 +27,12 @@ h2 {
     width: 100%;
     height: 100%;
   }
+
+  &--quaffle-half {
+    width: 50%;
+    height: 50%;
+    transform: translate(10px, -10px);
+  }
 }
 
 .golden-snitch {

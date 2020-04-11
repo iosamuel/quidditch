@@ -6,7 +6,8 @@
         pieceMoving &&
         pieceMoving.type === piece.type &&
         pieceMoving.position.x === piece.position.x &&
-        pieceMoving.position.y === piece.position.y
+        pieceMoving.position.y === piece.position.y,
+      'piece--quaffle-half': piece.type === 'quaffle' && gameInit
     }]"
     @click="$emit('click')"
     v-if="space[0] === piece.position.y && space[1] === piece.position.x"
@@ -48,7 +49,7 @@
       viewBox="0 0 100 100"
       style="enable-background:new 0 0 100 100;"
       xml:space="preserve"
-      v-else-if="team.name === 'Hogwarts' && piece.type === 'chaser'"
+      v-else-if="team.name === 'Gryffindor' && piece.type === 'chaser'"
     >
       <circle cx="50" cy="50" r="50" :style="{ fill: team.color }" />
       <path
@@ -246,6 +247,6 @@
 <script>
 export default {
   name: 'Piece',
-  props: ['piece', 'space', 'team', 'pieceMoving'],
+  props: ['piece', 'space', 'team', 'pieceMoving', 'gameInit'],
 };
 </script>

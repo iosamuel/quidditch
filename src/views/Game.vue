@@ -80,6 +80,7 @@
             @click="!gameBegin.init && pieceClicked(teams.team2.pieces.keeper, 'team2')"/>
           <Piece
             v-if="isInPosition(teams.quaffle.position, [keyRow, key])"
+            :gameInit="!gameBegin.init"
             :piece="teams.quaffle"
             :space="[keyRow, key]"/>
         </div>
@@ -186,6 +187,8 @@
 import Alerts from '@/components/Alerts.vue';
 import Dice from '@/components/Dice.vue';
 import Piece from '@/components/Piece.vue';
+
+let resize;
 
 const goldenSnitchSpaces = 76;
 const halfGoldenSnitchSpaces = (goldenSnitchSpaces / 2);
@@ -355,7 +358,7 @@ export default {
           ...JSON.parse(JSON.stringify(team1Structure)),
         },
         team2: {
-          name: 'Hogwarts',
+          name: 'Gryffindor',
           color: '#512830',
           ...JSON.parse(JSON.stringify(team2Structure)),
         },
@@ -386,12 +389,18 @@ export default {
     },
   },
   mounted() {
-    this.board.boardHeight = parseInt(
-      window.getComputedStyle(this.$refs.board).height.slice(0, -2), 10,
-    );
-    this.board.boardWidth = parseInt(
-      window.getComputedStyle(this.$refs.goldenSnitch).width.slice(0, -2), 10,
-    );
+    resize = new ResizeObserver(() => {
+      this.board.boardHeight = parseInt(
+        window.getComputedStyle(this.$refs.board).height.slice(0, -2), 10,
+      );
+      this.board.boardWidth = parseInt(
+        window.getComputedStyle(this.$refs.goldenSnitch).width.slice(0, -2), 10,
+      );
+    });
+    resize.observe(this.$refs.board);
+  },
+  beforeDestroy() {
+    resize.unobserve(this.$refs.board);
   },
   methods: {
     getSpaceStyleGoldenSnitch(index) {
@@ -417,7 +426,6 @@ export default {
       this.rollDice().then(() => {
         if (this.gameBegin.init) {
           this.gameBegin[this.turn] = this.dice;
-          console.log(this.gameBegin[this.turn], this.turn, this.dice);
           if (this.gameBegin.team1 && this.gameBegin.team2) {
             if (this.gameBegin.team1 === this.gameBegin.team2) {
               // No pueden ser iguales, toca repetir el proceso
@@ -431,6 +439,7 @@ export default {
                 : 'team2'
               );
               this.gameBegin.init = false;
+              this.quaffleMove(true);
             }
           } else {
             this.changeTurn();
@@ -526,6 +535,13 @@ export default {
         } else {
           // mostrar alerta error? no se puede mover a (y, x)
         }
+      }
+    },
+    quaffleMove(begin) {
+      if (begin) {
+        this.teams.quaffle.position = this.teams[this.turn].pieces.chasers[0].position;
+      } else {
+        // TODO: Algoritmo de busqueda, chaser mas cercano al quaffle
       }
     },
   },
